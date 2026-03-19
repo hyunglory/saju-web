@@ -1,5 +1,7 @@
 fastapi
 uvicorn
-korean-lunar-calendar
+sajupy
+pandas
+geopy
 google-genai
 python-dotenv

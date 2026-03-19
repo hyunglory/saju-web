@@ -2,27 +2,51 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>만년 사주</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@300;400;700&display=swap" rel="stylesheet">
+    
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
     <style>
-        body { font-family: 'Malgun Gothic', sans-serif; background-color: #f4f4f2; padding: 20px; }
-        .container { max-width: 500px; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); margin: auto; }
-        h2 { text-align: center; color: #333; margin-bottom: 20px; }
-        .form-group { margin-bottom: 15px; }
-        label { font-weight: bold; font-size: 14px; color: #555; }
-        input, select, button { width: 100%; padding: 10px; margin-top: 5px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 5px; }
-        button { background-color: #2c3e50; color: white; border: none; cursor: pointer; font-size: 16px; font-weight: bold; margin-top: 15px; }
-        button:hover { background-color: #1a252f; }
-        #result { margin-top: 20px; padding: 15px; background-color: #e9ecef; border-radius: 5px; display: none; }
-        pre { white-space: pre-wrap; word-wrap: break-word; font-size: 13px; }
+        :root {
+            --primary-color: #5c4033;
+            --point-color: #b8860b;
+            --bg-color: #f5f4f0;
+            --box-bg: #ffffff;
+        }
+        body { font-family: 'Noto Serif KR', serif; background-color: var(--bg-color); color: #333; margin: 0; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        .container { width: 100%; max-width: 500px; background-color: var(--box-bg); padding: 30px 25px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); box-sizing: border-box; }
+        h2 { text-align: center; color: var(--primary-color); margin-bottom: 25px; font-size: 1.5rem; letter-spacing: 2px; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; font-weight: 700; font-size: 0.95rem; color: var(--primary-color); margin-bottom: 8px; }
+        input, select { width: 100%; padding: 12px; font-size: 1rem; font-family: inherit; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; background-color: #fafafa; transition: border-color 0.3s; }
+        input:focus, select:focus { outline: none; border-color: var(--point-color); background-color: #fff; }
+        .date-inputs { display: flex; gap: 10px; }
+        button { width: 100%; padding: 15px; background-color: var(--primary-color); color: white; border: none; border-radius: 8px; font-size: 1.1rem; font-weight: 700; font-family: inherit; cursor: pointer; margin-top: 10px; transition: background-color 0.3s, transform 0.1s; }
+        button:hover { background-color: #4a332a; }
+        button:active { transform: scale(0.98); }
+        #result { margin-top: 30px; padding: 25px 20px; background-color: var(--bg-color); border-radius: 12px; display: none; border: 1px solid #ebe9e4; }
+        .saju-display { font-size: 1.4rem; font-weight: 700; color: var(--primary-color); text-align: center; letter-spacing: 3px; margin: 15px 0; padding: 15px 0; border-top: 1px dashed #ccc; border-bottom: 1px dashed #ccc; }
+        
+        /* 🌟 [수정됨] AI 풀이 영역 디자인 다듬기 */
+        .ai-reading { line-height: 1.8; font-size: 1.05rem; color: #444; }
+        /* 제미나이가 강조한 굵은 글씨(**)를 일반 검은색이 아닌 예쁜 포인트 색상으로 변경 */
+        .ai-reading strong { color: var(--primary-color); font-weight: 700; } 
+        .ai-reading p { margin-top: 0; }
+
+        .loading-text { text-align: center; font-weight: 700; color: var(--point-color); animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0% { opacity: 0.6; } 50% { opacity: 1; } 100% { opacity: 0.6; } }
+        @media (max-width: 400px) { .date-inputs { flex-direction: column; gap: 8px; } .container { padding: 20px 15px; } }
     </style>
 </head>
 <body>
     <div class="container">
-        <h2>🌙 정통 사주 만세력</h2>
+        <h2>🌙 만년 사주</h2>
         
         <div class="form-group">
             <label>생년월일</label>
-            <div style="display: flex; gap: 10px;">
+            <div class="date-inputs">
                 <input type="number" id="year" placeholder="년(YYYY)" value="1995">
                 <input type="number" id="month" placeholder="월(MM)" value="10">
                 <input type="number" id="day" placeholder="일(DD)" value="15">
@@ -35,52 +59,70 @@
         </div>
         
         <div class="form-group">
-            <label>양력/음력 선택</label>
+            <label>양력/음력</label>
             <select id="is_lunar">
                 <option value="false">양력</option>
                 <option value="true">음력</option>
             </select>
         </div>
+
+        <div class="form-group">
+            <label>성별</label>
+            <select id="gender">
+                <option value="남성">남성</option>
+                <option value="여성">여성</option>
+            </select>
+        </div>
         
-        <button onclick="getSaju()">사주 명식 뽑기</button>
+        <button id="submitBtn" onclick="getSaju()">사주 명식 뽑기</button>
 
         <div id="result">
-            <h4>📜 분석 결과</h4>
-            <pre id="resultText"></pre>
+            <div id="resultText"></div>
         </div>
     </div>
 
     <script>
         async function getSaju() {
+            const btn = document.getElementById('submitBtn');
+            const resultDiv = document.getElementById('result');
+            const resultText = document.getElementById('resultText');
+
             const year = document.getElementById('year').value;
             const month = document.getElementById('month').value;
             const day = document.getElementById('day').value;
             const time = document.getElementById('time').value;
             const is_lunar = document.getElementById('is_lunar').value;
+            const gender = document.getElementById('gender').value;
 
-            // 로딩 메시지 띄우기 (AI가 글을 쓰는 동안 기다려달라는 표시)
-            document.getElementById('resultText').innerHTML = "<b>AI 역술가가 사주를 분석하며 풀이 글을 작성하고 있습니다. 잠시만 기다려주세요... ⏳</b>";
-            document.getElementById('result').style.display = 'block';
+            btn.disabled = true;
+            btn.innerText = "분석 중입니다...";
+            resultDiv.style.display = 'block';
+            resultText.innerHTML = "<div class='loading-text'>AI 역술가가 명식을 분석하며<br>풀이 글을 작성하고 있습니다... ⏳</div>";
 
-            const url = `/get_saju?year=${year}&month=${month}&day=${day}&time=${time}&is_lunar=${is_lunar}`;
+            const url = `/get_saju?year=${year}&month=${month}&day=${day}&time=${time}&is_lunar=${is_lunar}&gender=${gender}`;
             
             try {
                 const response = await fetch(url);
                 const data = await response.json();
                 
-                // 화면에 예쁘게 결과 출력하기
-                let resultHtml = `
-                    <h4>📜 명식 데이터</h4>
-                    <p><strong>보정된 시간:</strong> ${data.expert_correction.real_solar_time} (야자시: ${data.expert_correction.yaja_shi_applied})</p>
-                    <p><strong>사주팔자:</strong> <span style="font-size:1.3em; color:#d35400;"><b>${data.full_saju}</b></span></p>
-                    <hr style="border:1px dashed #ccc; margin: 20px 0;">
-                    <h4>🤖 AI 사주 풀이</h4>
-                    <div style="line-height: 1.6; font-size: 15px; white-space: pre-wrap;">${data.ai_reading}</div>
+                // 🌟 [핵심 변경] marked.parse()를 사용해 AI의 텍스트를 HTML 디자인으로 번역!
+                const formattedAiReading = marked.parse(data.ai_reading);
+                
+                let resultHtml = `                    
+                    <div class="saju-display">
+                        ${data.full_saju}
+                    </div>
+                    
+                    <h3 style="color:var(--primary-color); font-size:1.2rem; margin-top:20px;">🤖 AI 역술가의 풀이</h3>
+                    <div class="ai-reading">${formattedAiReading}</div>
                 `;
-                document.getElementById('resultText').innerHTML = resultHtml;
+                resultText.innerHTML = resultHtml;
 
             } catch (error) {
-                alert("서버 오류가 발생했습니다. 터미널을 확인해주세요!");
+                resultText.innerHTML = "<div style='color:red; text-align:center;'>서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.</div>";
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "사주 명식 뽑기";
             }
         }
     </script>
