@@ -86,7 +86,7 @@ def get_saju(year: int, month: int, day: int, time: str = "00:00", is_lunar: boo
     
     try:
         response = client.models.generate_content(
-            model='gemini-2.5-flash',
+            model='gemini-3.1-flash-lite-preview',
             contents=prompt
         )
         ai_reading = response.text
