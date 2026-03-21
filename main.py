@@ -21,6 +21,10 @@ def read_root():
 def favicon():
     return FileResponse("favicon.ico")
 
+@app.get("/og-image.png", include_in_schema=False)
+def og_image():
+    return FileResponse("og-image.png")    
+
 @app.get("/get_saju")
 def get_saju(year: int, month: int, day: int, time: str = "00:00", is_lunar: bool = False, gender: str = "남성"):
     # 1. 입력된 시간 분리
