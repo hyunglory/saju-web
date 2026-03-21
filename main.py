@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, FileResponse  # 👈 FileResponse 추가!
 from sajupy import SajuCalculator, lunar_to_solar # 👈 완벽한 만세력 도구로 교체!
 from google import genai
 import os
@@ -16,6 +16,10 @@ client = genai.Client(api_key=api_key)
 def read_root():
     with open("index.html", "r", encoding="utf-8") as f:
         return f.read()
+
+@app.get("/favicon.ico", include_in_schema=False)
+def favicon():
+    return FileResponse("favicon.ico")
 
 @app.get("/get_saju")
 def get_saju(year: int, month: int, day: int, time: str = "00:00", is_lunar: bool = False, gender: str = "남성"):
@@ -92,7 +96,14 @@ def get_saju(year: int, month: int, day: int, time: str = "00:00", is_lunar: boo
         )
         ai_reading = response.text
     except Exception as e:
-        ai_reading = f"AI 풀이를 불러오는 중 에러가 발생했습니다: {e}"
+        error_msg = str(e)
+        
+        # 에러 메시지에 429나 할당량(Quota) 관련 단어가 있다면 친절한 문구로 바꿉니다.
+        if "429" in error_msg or "RESOURCE_EXHAUSTED" in error_msg or "quota" in error_msg.lower():
+            ai_reading = "**안내:** 현재 이용자가 많아 AI 역술가가 잠시 숨을 고르고 있습니다. 1~2분 뒤에 다시 [사주 명식 뽑기] 버튼을 눌러주세요. 🙇‍♂️"
+        else:
+            # 그 외에 다른 알 수 없는 에러가 났을 때의 대비책
+            ai_reading = "**안내:** 일시적인 서버 오류로 풀이를 가져오지 못했습니다. 잠시 후 다시 시도해 주세요. 🛠️"
 
     return {
         "status": "success",

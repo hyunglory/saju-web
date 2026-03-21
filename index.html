@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>만년 사주</title>
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@300;400;700&display=swap" rel="stylesheet">
     
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
@@ -20,7 +21,19 @@
         h2 { text-align: center; color: var(--primary-color); margin-bottom: 25px; font-size: 1.5rem; letter-spacing: 2px; }
         .form-group { margin-bottom: 20px; }
         label { display: block; font-weight: 700; font-size: 0.95rem; color: var(--primary-color); margin-bottom: 8px; }
-        input, select { width: 100%; padding: 12px; font-size: 1rem; font-family: inherit; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; background-color: #fafafa; transition: border-color 0.3s; }
+        input, select {
+            width: 100%;
+            max-width: 100%; /* 👈 핵심 1: 어떤 경우에도 부모 박스를 넘지 못하게 강제! */
+            margin: 0;       /* 👈 핵심 2: 브라우저가 몰래 넣는 기본 여백 제거! */
+            padding: 12px;
+            font-size: 1rem;
+            font-family: inherit;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-sizing: border-box;
+            background-color: #fafafa;
+            transition: border-color 0.3s;
+        }
         input:focus, select:focus { outline: none; border-color: var(--point-color); background-color: #fff; }
         .date-inputs { display: flex; gap: 10px; }
         button { width: 100%; padding: 15px; background-color: var(--primary-color); color: white; border: none; border-radius: 8px; font-size: 1.1rem; font-weight: 700; font-family: inherit; cursor: pointer; margin-top: 10px; transition: background-color 0.3s, transform 0.1s; }
@@ -47,9 +60,9 @@
         <div class="form-group">
             <label>생년월일</label>
             <div class="date-inputs">
-                <input type="number" id="year" placeholder="년(YYYY)" value="1995">
-                <input type="number" id="month" placeholder="월(MM)" value="10">
-                <input type="number" id="day" placeholder="일(DD)" value="15">
+                <input type="number" id="year" placeholder="년(4자리)" value="1995" oninput="if(this.value.length > 4) this.value = this.value.slice(0, 4);">
+                <input type="number" id="month" placeholder="월(2자리)" value="10" oninput="if(this.value.length > 2) this.value = this.value.slice(0, 2);">
+                <input type="number" id="day" placeholder="일(2자리)" value="15" oninput="if(this.value.length > 2) this.value = this.value.slice(0, 2);">
             </div>
         </div>
         
@@ -78,6 +91,7 @@
 
         <div id="result">
             <div id="resultText"></div>
+            <button id="copyBtn" onclick="copyResult()" style="display: none; margin-top: 15px; background-color: #b8860b;">결과 복사하기 📋</button>
         </div>
     </div>
 
@@ -118,12 +132,28 @@
                 `;
                 resultText.innerHTML = resultHtml;
 
+                // 👇 사주 결과가 나오면 복사 버튼도 나타나게 합니다 👇
+                document.getElementById('copyBtn').style.display = 'block';
+
             } catch (error) {
                 resultText.innerHTML = "<div style='color:red; text-align:center;'>서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.</div>";
             } finally {
                 btn.disabled = false;
                 btn.innerText = "사주 명식 뽑기";
             }
+        }
+
+        // 👇 결과 복사하는 마법의 함수 👇
+        function copyResult() {
+            // 결과창에 있는 텍스트만 깔끔하게 가져옵니다
+            const textToCopy = document.getElementById('resultText').innerText;
+            
+            // 스마트폰/PC의 클립보드(임시 저장소)에 텍스트를 복사합니다
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                alert("사주 풀이 결과가 복사되었습니다! 카카오톡이나 메모장에 붙여넣기 해보세요. ✨");
+            }).catch(err => {
+                alert("복사에 실패했습니다. 직접 드래그해서 복사해 주세요.");
+            });
         }
     </script>
 </body>
