@@ -5,3 +5,4 @@ pandas
 geopy
 google-genai
 python-dotenv
+certifi==2026.10.19
